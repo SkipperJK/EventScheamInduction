@@ -1,8 +1,8 @@
 import json
 from config import *
 from elasticsearch import Elasticsearch
-from core.model.ArticleES import ArticleES
-from core.model.ArticleES import customAritcleESDecoder
+from ESIServer.model.ArticleES import ArticleES
+from ESIServer.model.ArticleES import customAritcleESDecoder
 
 es = Elasticsearch(ES_HOSTS)
 

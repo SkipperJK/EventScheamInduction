@@ -4,7 +4,7 @@ import json
 import numpy as np
 import math
 import pickle
-from core.model.Triple import Triple
+from ESIServer.model.Triple import Triple
 from pymongo import MongoClient
 from sklearn.cluster import AgglomerativeClustering
 

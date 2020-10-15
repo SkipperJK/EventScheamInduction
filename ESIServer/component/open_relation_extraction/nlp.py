@@ -1,6 +1,6 @@
 from ltp import LTP
-from core.model.Word import WordUnit
-from core.model.Sentence import SentenceUnit
+from ESIServer.model.Word import WordUnit
+from ESIServer.model.Sentence import SentenceUnit
 from config import LTP4_MODEL_DIR
 
 class NLP:

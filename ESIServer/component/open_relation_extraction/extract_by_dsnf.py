@@ -1,4 +1,4 @@
-from core.model.Word import WordUnit
+from ESIServer.model.Word import WordUnit
 
 
 class ExtractByDSNF:

@@ -2,11 +2,11 @@ import sys
 sys.path.append("../")
 from pyhanlp import *
 from mongoengine import connect
-from core.model.ArticleAllType import ArticleAllType
-from core.utlis.split_sentence import split_sentence
-from core.model.Sentence import Sentence
-from core.model.Word import Word
-from core.model.Article import Article
+from ESIServer.model.ArticleAllType import ArticleAllType
+from ESIServer.utlis.split_sentence import split_sentence
+from ESIServer.model.Sentence import Sentence
+from ESIServer.model.Word import Word
+from ESIServer.model.Article import Article
 
 
 # print(type(HanLP.segment('你好，欢迎在Python中调用HanLP的API')))

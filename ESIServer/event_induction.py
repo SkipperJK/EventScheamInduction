@@ -1,5 +1,5 @@
-from core.component.elasticsearch import search
-from core.component.clustering import trigger_clustering
+from ESIServer.component.elasticsearch import search
+from ESIServer.component.triple_cluster import trigger_clustering
 
 
 

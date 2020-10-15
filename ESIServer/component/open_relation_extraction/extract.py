@@ -1,6 +1,6 @@
 import unittest
-from core.component.openIE.nlp import NLP
-from core.component.openIE.extractor import Extractor
+from ESIServer.component.open_relation_extraction.nlp import NLP
+from ESIServer.component.open_relation_extraction.extractor import Extractor
 
 nlp = NLP()
 extractor = Extractor()

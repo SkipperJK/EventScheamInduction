@@ -1,6 +1,6 @@
-from core.utils.utils import is_entity
-from core.model.EntityPair import EntityPair
-from core.component.openIE.extract_by_dsnf import ExtractByDSNF
+from ESIServer.utils.utils import is_entity
+from ESIServer.model.EntityPair import EntityPair
+from ESIServer.component.open_relation_extraction.extract_by_dsnf import ExtractByDSNF
 
 
 
