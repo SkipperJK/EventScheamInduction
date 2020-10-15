@@ -29,6 +29,7 @@ class TestExtract(unittest.TestCase):
 
     def test_extract(self):
         origin_sentences = [
+            "李克强总理今天来我家了，我赶紧往家里跑。",
             "浮士德与魔鬼达成协议。",
             "巴拿马在2007年与中国建立关系。",
             "德国总统高克。",
