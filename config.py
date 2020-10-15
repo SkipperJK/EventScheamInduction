@@ -1,3 +1,12 @@
+import os
+import sys
+
+#PROJECT_DIR = sys.path[0] # 执行文件所在路径，并不一定是config.py文件所在路径
+#PROJECT_DIR = os.getcwd() # 执行文件所在路径，并不一定是config.py文件所在路径
+#PROJECT_DIR = __file__ # 当前文件路径
+PROJECT_DIR = os.path.dirname(__file__) # 当前文件路径
+
+
 # MongoDB
 MONGODB_HOST = "10.176.24.41"
 MONGODB_PORT = 27017
@@ -19,5 +28,6 @@ ES_FIELD_MAPPING = {
 
 
 # pytlp
-MODEL_DIR = ''
-USER_DICT_DIR = ''
+LTP_MODEL_DIR = os.path.join(PROJECT_DIR, 'core/data/pretrained_model/LTPModel')
+LTP4_MODEL_DIR = os.path.join(PROJECT_DIR, 'core/data/pretrained_model/LTPModel')
+USER_DICT_DIR = os.path.join(PROJECT_DIR, 'core/data/user_dicts')
