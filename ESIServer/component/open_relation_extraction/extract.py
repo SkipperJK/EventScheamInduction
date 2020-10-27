@@ -1,4 +1,5 @@
 import unittest
+from ESIServer.model.Triple import Triple
 from ESIServer.component.open_relation_extraction.nlp import NLP
 from ESIServer.component.open_relation_extraction.extractor import Extractor
 
@@ -11,14 +12,24 @@ def extract(origin_sentences):
     words_postag = nlp.postag(lemmas, hidden)
     words_nertag = nlp.nertag(words_postag, hidden)
     sentences = nlp.dependency(words_nertag, hidden)
-    num = 0
+
+    triples = []
+    num = 1
     for idx_sent, sent in enumerate(origin_sentences):
+
         print('+' * 30)
         print(sent)
         for word in sentences[idx_sent].words:
-            print(word.__dict__)
+            print(word.to_string())
         print('-' * 30)
-        print(extractor.extract(sent, sentences[idx_sent], './', num))
+        triples = extractor.extract(sent, sentences[idx_sent])
+        for triple in triples:
+            triple.sent_num = idx_sent+1 # 标记句子编号
+            triple.num = num             # 标记元组编号
+            print(triple.to_string())
+            num += 1
+
+    return triples
 
 
 
@@ -29,6 +40,8 @@ class TestExtract(unittest.TestCase):
 
     def test_extract(self):
         origin_sentences = [
+            "习近平主席访问奥巴马总统先生",
+            "习近平主席视察厦门，李克强访问香港",
             "李克强总理今天来我家了，我赶紧往家里跑。",
             "浮士德与魔鬼达成协议。",
             "巴拿马在2007年与中国建立关系。",

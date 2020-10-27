@@ -44,6 +44,7 @@ class NLP:
         :param hidden:
         :return:
         """
+        # Nh 人名     Ni 机构名      Ns 地名
         nertags = self.ltp.ner(hidden)
         '''
         为了进行三元组提取，使用到ner信息，需要将一些ner分析后的词进行合并得到新词。
@@ -60,6 +61,7 @@ class NLP:
         for idx_sent, nertags_sent in enumerate(nertags):
             for item in nertags_sent:
                 for i in range(item[1], item[2]+1):
+                    words[idx_sent][i].nertag = item[0]
                     words[idx_sent][i].postag = ner2pos[item[0]]
         # for item in nertags:
         #     for i in range(item[1], item[2]+1):

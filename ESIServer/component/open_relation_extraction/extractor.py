@@ -6,7 +6,7 @@ from ESIServer.component.open_relation_extraction.extract_by_dsnf import Extract
 
 class Extractor:
     """抽取生成知识三元组
-    从句子中找出所有的entity pairs，使用制定好的规则DSNF判断entity pair是否可以构成一个知识三元组
+    以句子为单位，从句子中找出所有的entity pairs，使用制定好的规则DSNF判断entity pair是否可以构成一个知识三元组
     如果可以，提取出entity pair的relationship。
     Attributes:
         entities: WordUnit list，句子的实体列表
@@ -15,7 +15,8 @@ class Extractor:
     entities = []  # 存储该句子中的可能实体
     entity_pairs = []  # 存储该句子中(满足一定条件)的可能实体对
 
-    def extract(self, origin_sentence, sentence, file_path, num):
+    # def extract(self, origin_sentence, sentence, file_path, num):
+    def extract(self, origin_sentence, sentence):
         """
         Args:
             origin_sentence: string，原始句子
@@ -23,16 +24,20 @@ class Extractor:
         Returns:
             num： 知识三元组的数量编号
         """
+        self.triples = []
         self.get_entities(sentence)
         self.get_entity_pairs(sentence)
-        print('\t {}'.format(list(map(str, self.entities))))  # print list并不会调用list的元素的__str__
-        print('\t {}'.format(list(map(str, self.entity_pairs))))
-        self.triples = []
-        for entity_pair in self.entity_pairs:
+        print('Entities: {}'.format(list(map(str, self.entities))))  # print list并不会调用list的元素的__str__
+        print('Entity pairs: {}'.format(list(map(str, self.entity_pairs))))
+
+        print("Extracting triple .....")
+        for i, entity_pair in enumerate(self.entity_pairs):
+            print("\t{}: {}".format(i, str(entity_pair)))
             entity1 = entity_pair.entity1
             entity2 = entity_pair.entity2
 
-            extract_dsnf = ExtractByDSNF(origin_sentence, sentence, entity1, entity2, file_path, num)
+            extract_dsnf = ExtractByDSNF(origin_sentence, sentence, entity1, entity2)
+            # ? 一个entity pair可能提取出多个triples吗？
             # [DSNF2|DSNF7]，部分覆盖[DSNF5|DSNF6]
             if extract_dsnf.SBV_VOB(entity1, entity2):
                 pass
@@ -50,13 +55,14 @@ class Extractor:
             # ["的"短语]
             if extract_dsnf.entity_de_entity_NNT(entity1, entity2):
                 pass
-
-
-            num = extract_dsnf.num
-        return num
+            if extract_dsnf.triples != None:
+                self.triples.extend(extract_dsnf.triples)
+        return self.triples
 
     def get_entities(self, sentence):
         """获取句子中的所有可能实体
+        通过只抽取与某些指定类型的实体：人名，机构名，地名等，---》过滤掉很多无意义的信息
+        例如：习近平主席和李克强总理接见普京。 --》实体：['习近平', '李克强', '普京']，不会单独的寻找'总统'相关的信息
         Args:
             sentence: SentenceUnit，句子单元
         Returns:

@@ -1,23 +1,36 @@
 from ESIServer.model.Word import WordUnit
+from ESIServer.model.Triple import Triple
 
 
 class ExtractByDSNF:
-    """根据DSNF(Dependency Semantic Normal Forms)进行知识抽取"""
-    origin_sentence = ''  # str，原始句子
-    sentence = None  # SentenceUnit，句子表示，每行为一个词
-    entity1 = None  # WordUnit，实体1词单元
-    entity2 = None  # WordUnit，实体2词单元
-    head_relation = None  # WordUnit，头部关系词单元
-    file_path = None  # Element，XML文档
-    num = 1  # 三元组数量编号
+    """
+    对每个entity pair，根据DSNF(Dependency Semantic Normal Forms)进行知识抽取
+    Attributes:
+        origin_sentence: str，原始句子
+        sentence: WordUnit list，依存句法分析之后构成的句子
+        entity1: WordUnit
+        entity2: WordUnit
+        head_relation:
+        triple:
+    """
+    # origin_sentence = ''  # str，原始句子
+    # sentence = None  # SentenceUnit，句子表示，每行为一个词
+    # entity1 = None  # WordUnit，实体1词单元
+    # entity2 = None  # WordUnit，实体2词单元
+    # head_relation = None  # WordUnit，头部关系词单元
+    #triples = []
+    # file_path = None  # Element，XML文档
+    # num = 1  # 三元组数量编号
 
-    def __init__(self, origin_sentence, sentence, entity1, entity2, file_path, num):
+    # def __init__(self, origin_sentence, sentence, entity1, entity2, file_path, num):
+    def __init__(self, origin_sentence, sentence, entity1, entity2):
         self.origin_sentence = origin_sentence
         self.sentence = sentence
         self.entity1 = entity1
         self.entity2 = entity2
-        self.file_path = file_path
-        self.num = num
+        # self.file_path = file_path
+        # self.num = num
+        self.triples = []
 
     def is_entity(self, entry):
         self.false_ = """判断词单元是否实体
@@ -37,6 +50,7 @@ class ExtractByDSNF:
     def check_entity(self, entity):
         """处理偏正结构(奥巴马总统)，得到偏正部分(总统)，句子成分的主语或宾语
            奥巴马<-(ATT)-总统
+           例如：奥巴马 总统 访问 中国。其中：奥巴马的偏正部分是 总统，总统在dp中和访问（verb）是SBV关系。
            "the head word is a entity and modifiers are called the modifying attributives"
         Args:
             entity: WordUnit，待检验的实体
@@ -98,24 +112,23 @@ class ExtractByDSNF:
     def build_triple(self, entity1, entity2, relation):
         """建立三元组，写入json文件
         Args:
-            entity1: WordUnit，实体1
-            entity2: WordUnit，实体2
-            relation: str list，关系列表
+            entity1: WordUnit list，实体1
+            entity2: WordUnit list，实体2
+            relation: WordUnit list，关系列表
             num: int，知识三元组编号
         Returns:
             True: 获得三元组(True)
         """
+        self.triples.append(Triple(entity1, relation, entity2))
         triple = dict()
-        triple['编号'] = self.num
-        self.num += 1
-        triple['句子'] = self.origin_sentence
+        # triple['num'] = self.num
+        # self.num += 1
+        triple['origin_sentence'] = self.origin_sentence
         entity1_str = self.element_connect(entity1)
         entity2_str = self.element_connect(entity2)
         relation_str = self.element_connect(relation)
-        triple['知识'] = [entity1_str, relation_str, entity2_str]
-        # self.triples.append([entity1_str, relation_str, entity2_str])
-        print('triple: ' + entity1_str + '\t' + relation_str + '\t' + entity2_str)
-        # 将提取得到的tirple输出，
+        triple['knowledge'] = [entity1_str, relation_str, entity2_str]
+        print('\ttriple: ' + entity1_str + '\t' + relation_str + '\t' + entity2_str)
         return True
 
     def element_connect(self, element):
@@ -162,6 +175,7 @@ class ExtractByDSNF:
     def SBV_VOB(self, entity1, entity2, entity_coo=None, entity_flag=''):
         """TV(Transitive Verb)
             全覆盖[DSNF2|DSNF7]，部分覆盖[DSNF5|DSNF6]
+            7：动词并列的情况   5和6：entity并列的左右附加情况
         Args:
             entity1: WordUnit，原实体1
             entity2: WordUnit，原实体2
@@ -172,6 +186,7 @@ class ExtractByDSNF:
         """
         ent1 = self.check_entity(entity1)  # 偏正部分，若无偏正部分则就是原实体
         ent2 = self.check_entity(entity2)
+        print('\t\t---偏正修正：e1:{}, e2:{}'.format(ent1.lemma, ent2.lemma))
 
         if ent1.dependency == 'SBV' and ent2.dependency == 'VOB':
             # entity_coo不为空，存在并列
@@ -180,9 +195,10 @@ class ExtractByDSNF:
                     return self.determine_relation_SVB(entity_coo, entity2, ent1, ent2)
                 else:
                     return self.determine_relation_SVB(entity1, entity_coo, ent1, ent2)
+            # 非并列
             else:
                 return self.determine_relation_SVB(entity1, entity2, ent1, ent2)
-        # 习近平 主席 访问 奥巴马 总统 先生
+        # 习近平 主席 访问 奥巴马 总统 先生 -->先生 是 访问 的宾语，因此处理两层修饰
         elif (ent2.dependency == 'ATT' and ent2.head_word.dependency == 'VOB'
               and ent2.head_word.head == ent1.head):
             # entity_coo不为空，存在并列
@@ -206,7 +222,10 @@ class ExtractByDSNF:
             *: bool，获得三元组(True)，未获得三元组(False)
         """
         relation_list = []  # 关系列表
-        relation_list.append(ent2.head_word)
+        # relation_list.append(ent2.head_word)
+        relation_list.append(ent1.head_word)
+        # ？？？为什么可以直接确定relationship word，而不是遍历去寻找，在这里肯定有错误啊。----------------------------------------++++--------------------------------
+        # 例如：习近平 主席 访问 奥巴马 总统 先生。 抽取得到的relation word是先生，而不是访问
         entity1_list = []  # 实体1列表
         entity1_list.append(entity1)
         entity2_list = []  # 实体2列表
@@ -231,6 +250,7 @@ class ExtractByDSNF:
             if ent_1.dependency == 'ATT' and abs(ent_1.head - entity1.ID) <= 3:
                 entity2_list.append(ent_1.head)
 
+        # 寻找relationship词
         coo_flag = True  # 主谓关系中，可以处理的标志位
         # 两个动词构成并列时候，为了防止实体的动作张冠李戴，保证第二个动宾结构不能直接构成SBV-VOB的形式
         # 否则不进行处理
@@ -240,13 +260,14 @@ class ExtractByDSNF:
         while i < ent2.ID - 1:  # 这里减1，因为ID从1开始编号
             temp = self.sentence.words[i]  # ent1的后一个词
             # if temp(entity) <-[SBV]- AttWord -[VOB]-> 'ent2'
+            # 确保第二个动宾结构不能构成SBV-VOB的形式
             if self.is_entity(temp) and temp.head == ent2.head and temp.dependency == 'SBV':
                 # 代词不作为实体对待
                 if temp.postag == 'r':
                     continue
                 else:
                     coo_flag = False
-                    break;
+                    break
             i += 1
         # 如果该句子满足处理要求
         is_ok = False  # 是否获得DSNF匹配
