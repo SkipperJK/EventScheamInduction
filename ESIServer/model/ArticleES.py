@@ -1,3 +1,4 @@
+from ESIServer.utils.utils import split_sentence
 from collections import namedtuple
 
 class ArticleES:
@@ -6,6 +7,18 @@ class ArticleES:
         self.title = title
         self.content = content
         self.time = time
+
+    @property
+    def sentence_of_title(self):
+        return split_sentence(self.title)
+
+    @property
+    def sentence_of_content(self):
+        return split_sentence(self.content)
+
+
+
+
 
 
 def customAritcleESDecoder(articleDict):

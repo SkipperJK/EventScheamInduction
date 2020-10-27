@@ -1,4 +1,4 @@
-
+import unittest
 
 class WordUnit:
     """词单元组成"""
@@ -15,10 +15,11 @@ class WordUnit:
     # 当前词语与中心词的依存关系
     dependency = '' # 每个词都有指向自己的唯一依存
 
-    def __init__(self, ID, lemma, postag, head=0, head_word=None, dependency=''):
+    def __init__(self, ID, lemma, postag, nertag='', head=0, head_word=None, dependency=''):
         self.ID = ID
         self.lemma = lemma
         self.postag = postag
+        self.nertag = nertag
         self.head = head
         self.head_word = head_word
         self.dependency = dependency
@@ -58,26 +59,30 @@ class WordUnit:
         Returns:
             word_str: str，转换后的字符串
         """
-        word_str = ''
-        word_str += (str(self.ID) + '\t' + self.lemma + '\t' + self.postag + '\t' +
-                    str(self.head) + '\t' + self.dependency)
-        return word_str
+        return "ID: {:<2d}, lemma: {:<5s}, postag: {:<3s}, nertag: {:<3s}, head: {:<5d}, head_word: {:<5s}, dependency: {:<5s}".format(
+            self.ID, self.lemma, self.postag, self.nertag, self.head, str(self.head_word),self.dependency)
+
+
+
 
     def __str__(self):
         return self.lemma
 
 
-if __name__ == '__main__':
-    # 中国首都北京
-    word3 = WordUnit(3, '北京', 'ns', 0, None, 'HED')
-    word2 = WordUnit(2, '首都', 'ns', 3, word3, 'ATT')
-    word1 = WordUnit(1, '中国', 'ns', 2, word2, 'ATT')
 
-    print(word1.lemma + '\t' + word1.postag)
-    print(word2.lemma + '\t' + word2.head_word.lemma)
-    print(word3.get_lemma() + '\t' + word3.get_postag())
+class TestWord(unittest.TestCase):
 
-    print(word1.to_string())
-    print(word2.to_string())
-    print(word3.to_string())
+    def testWord(self):
+        # 中国首都北京
+        word3 = WordUnit(3, '北京', 'ns', '',  0, None, 'HED')
+        word2 = WordUnit(2, '首都', 'ns', '', 3, word3, 'ATT')
+        word1 = WordUnit(1, '中国', 'ns', '', 2, word2, 'ATT')
+
+        print(word1.lemma + '\t' + word1.postag)
+        print(word2.lemma + '\t' + word2.head_word.lemma)
+        print(word3.get_lemma() + '\t' + word3.get_postag())
+
+        print(word1.to_string())
+        print(word2.to_string())
+        print(word3.to_string())
 
