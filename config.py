@@ -28,6 +28,6 @@ ES_FIELD_MAPPING = {
 
 
 # pytlp
-LTP_MODEL_DIR = os.path.join(PROJECT_DIR, 'core/data/pretrained_model/LTPModel')
-LTP4_MODEL_DIR = os.path.join(PROJECT_DIR, 'core/data/pretrained_model/LTPModel')
-USER_DICT_DIR = os.path.join(PROJECT_DIR, 'core/data/user_dicts')
+LTP_MODEL_DIR = os.path.join(PROJECT_DIR, 'ESIServer/data/pretrained_model/LTPModel')
+LTP4_MODEL_DIR = os.path.join(PROJECT_DIR, 'ESIServer/data/pretrained_model/LTPModel')
+USER_DICT_DIR = os.path.join(PROJECT_DIR, 'ESIServer/data/user_dicts')
