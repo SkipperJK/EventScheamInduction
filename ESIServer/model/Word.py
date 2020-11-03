@@ -1,7 +1,16 @@
 import unittest
 
 class WordUnit:
-    """词单元组成"""
+    """词单元组成
+    postag标签
+        'n'<--->general noun 普通名词        'i'<--->idiom 成语                       'j'<--->abbreviation 缩写词
+        'ni'<--->organization name 机构名称   'nh'<--->person name 人名                'nl'<--->location noun 位置名词
+        'ns'<--->geographical name 地名      'nz'<--->other proper noun 其他专有名词    'ws'<--->foreign words
+    nertag标签
+        'Nh' 人名
+        'Ni' 机构名
+        'Ns' 地名
+    """
     # 定义类变量
     # 当前词在句子中的序号，1开始
     ID = 0
@@ -59,8 +68,17 @@ class WordUnit:
         Returns:
             word_str: str，转换后的字符串
         """
-        return "ID: {:<2d}, lemma: {:<5s}, postag: {:<3s}, nertag: {:<3s}, head: {:<5d}, head_word: {:<5s}, dependency: {:<5s}".format(
-            self.ID, self.lemma, self.postag, self.nertag, self.head, str(self.head_word),self.dependency)
+        return "ID: {0:>2d}, lemma: {1:{7}>5s}, postag: {2:>3s}, " \
+               "nertag: {3:>3s}, head: {4:>5d}, head_word: {5:{7}>5s}, dependency: {6:>5s}".format(
+            self.ID,
+            self.lemma,
+            self.postag,
+            self.nertag,
+            self.head,
+            str(self.head_word),
+            self.dependency,
+            chr(12288)
+        )
 
 
 
@@ -74,9 +92,9 @@ class TestWord(unittest.TestCase):
 
     def testWord(self):
         # 中国首都北京
-        word3 = WordUnit(3, '北京', 'ns', '',  0, None, 'HED')
+        word3 = WordUnit(3, '北京', 'ns', 'Ns',  0, None, 'HED')
         word2 = WordUnit(2, '首都', 'ns', '', 3, word3, 'ATT')
-        word1 = WordUnit(1, '中国', 'ns', '', 2, word2, 'ATT')
+        word1 = WordUnit(1, '中国', 'ns', 'Ns', 2, word2, 'ATT')
 
         print(word1.lemma + '\t' + word1.postag)
         print(word2.lemma + '\t' + word2.head_word.lemma)

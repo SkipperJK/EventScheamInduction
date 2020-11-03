@@ -34,14 +34,17 @@ class Triple:
 
 
     def to_string(self):
-        return "DocID: {:>5d}, SentenceID: {:5>d}, Num: {:5>d}, E1: {:s}, Rel: {:s}, E2: {:s}".format(
+        # 使用中文空格 chr(12288) 填充，实现中文对齐
+        return "DocID: {0:>5d}, SentenceID: {1:>3d}, Num: {2:2d}, E1: {3:{6}>10s}, Rel: {4:{6}>10s}, E2: {5:{6}>10s}".format(
             self.doc_num,
             self.sent_num,
             self.num,
             ''.join([word.lemma for word in self.entity1_list]),
             ''.join([word.lemma for word in self.relationship_list]),
-            ''.join([word.lemma for word in self.entity2_list])
+            ''.join([word.lemma for word in self.entity2_list]),
+            chr(12288)
         )
+
 
     def __str__(self):
         return "[{}, {}, {}]".format(
