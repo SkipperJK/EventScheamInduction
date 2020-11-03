@@ -1,9 +1,11 @@
+import logging
 from ESIServer.utils.utils import is_entity
 from ESIServer.model.EntityPair import EntityPair
 from ESIServer.component.open_relation_extraction.extract_by_dsnf import ExtractByDSNF
 
 
-
+debug_logger = logging.getLogger('debug')
+root_logger = logging.getLogger('root')
 class Extractor:
     """抽取生成知识三元组
     以句子为单位，从句子中找出所有的entity pairs，使用制定好的规则DSNF判断entity pair是否可以构成一个知识三元组
@@ -27,12 +29,11 @@ class Extractor:
         self.triples = []
         self.get_entities(sentence)
         self.get_entity_pairs(sentence)
-        print('Entities: {}'.format(list(map(str, self.entities))))  # print list并不会调用list的元素的__str__
-        print('Entity pairs: {}'.format(list(map(str, self.entity_pairs))))
+        debug_logger.debug('Entities: {}'.format(list(map(str, self.entities))))  # # print list并不会调用list的元素的__str__
+        debug_logger.debug('Entity pairs: {}'.format(list(map(str, self.entity_pairs))))
 
-        print("Extracting triple .....")
         for i, entity_pair in enumerate(self.entity_pairs):
-            print("\t{}: {}".format(i, str(entity_pair)))
+            debug_logger.debug("分析实体对儿{:>3d}： {:s}".format(i, str(entity_pair)))
             entity1 = entity_pair.entity1
             entity2 = entity_pair.entity2
 

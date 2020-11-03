@@ -1,10 +1,11 @@
 import os
 import sys
+import logging.config
 
 #PROJECT_DIR = sys.path[0] # 执行文件所在路径，并不一定是config.py文件所在路径
 #PROJECT_DIR = os.getcwd() # 执行文件所在路径，并不一定是config.py文件所在路径
 #PROJECT_DIR = __file__ # 当前文件路径
-PROJECT_DIR = os.path.dirname(__file__) # 当前文件路径
+PROJECT_DIR = os.path.dirname(__file__) # 当前文件目录
 
 
 # MongoDB
@@ -31,3 +32,7 @@ ES_FIELD_MAPPING = {
 LTP_MODEL_DIR = os.path.join(PROJECT_DIR, 'ESIServer/data/pretrained_model/LTPModel')
 LTP4_MODEL_DIR = os.path.join(PROJECT_DIR, 'ESIServer/data/pretrained_model/LTPModel')
 USER_DICT_DIR = os.path.join(PROJECT_DIR, 'ESIServer/data/user_dicts')
+
+LOG_CONFIG_DIR= os.path.join(PROJECT_DIR, 'logging.conf')
+# 由于logs路径问题：这里配置logging
+logging.config.fileConfig(LOG_CONFIG_DIR)

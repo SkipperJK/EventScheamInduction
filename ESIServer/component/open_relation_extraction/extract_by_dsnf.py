@@ -1,7 +1,8 @@
+import logging
 from ESIServer.model.Word import WordUnit
 from ESIServer.model.Triple import Triple
 
-
+debug_logger = logging.getLogger('debug')
 class ExtractByDSNF:
     """
     对每个entity pair，根据DSNF(Dependency Semantic Normal Forms)进行知识抽取
@@ -128,7 +129,7 @@ class ExtractByDSNF:
         entity2_str = self.element_connect(entity2)
         relation_str = self.element_connect(relation)
         triple['knowledge'] = [entity1_str, relation_str, entity2_str]
-        print('\ttriple: ' + entity1_str + '\t' + relation_str + '\t' + entity2_str)
+        debug_logger.debug('triple: ' + entity1_str + '\t' + relation_str + '\t' + entity2_str)
         return True
 
     def element_connect(self, element):
@@ -186,7 +187,7 @@ class ExtractByDSNF:
         """
         ent1 = self.check_entity(entity1)  # 偏正部分，若无偏正部分则就是原实体
         ent2 = self.check_entity(entity2)
-        print('\t\t---偏正修正：e1:{}, e2:{}'.format(ent1.lemma, ent2.lemma))
+        debug_logger.debug('偏正修正部分：e1:{}, e2:{}'.format(ent1.lemma, ent2.lemma))
 
         if ent1.dependency == 'SBV' and ent2.dependency == 'VOB':
             # entity_coo不为空，存在并列
