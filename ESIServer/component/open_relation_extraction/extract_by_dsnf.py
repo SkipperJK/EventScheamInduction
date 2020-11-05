@@ -29,9 +29,14 @@ class ExtractByDSNF:
         self.sentence = sentence
         self.entity1 = entity1
         self.entity2 = entity2
+        self.center_word_of_e1 = None   # 偏正结构的中心词
+        self.center_word_of_e2 = None   # 偏正结构的中心词
         # self.file_path = file_path
         # self.num = num
         self.triples = []
+        self.expand_entity()    # 处理e1，e2偏正结构
+        #debug_logger.debug(sentence.nertags)
+        #debug_logger.debug(sentence.is_extract_by_ne)
 
     def is_entity(self, entry):
         self.false_ = """判断词单元是否实体
@@ -49,10 +54,13 @@ class ExtractByDSNF:
             return False
 
     def check_entity(self, entity):
-        """处理偏正结构(奥巴马总统)，得到偏正部分(总统)，句子成分的主语或宾语
+        """处理偏正结构(奥巴马总统)，得到偏正部分(总统)，句子成分的主语或宾语 (中文普遍独特现象）
            奥巴马<-(ATT)-总统
            例如：奥巴马 总统 访问 中国。其中：奥巴马的偏正部分是 总统，总统在dp中和访问（verb）是SBV关系。
            "the head word is a entity and modifiers are called the modifying attributives"
+           偏差修正构成NE，则进行标记。 例如：同济大学，对同济偏差修正（同济修饰大学）之后得到同济大学，同时同济大学NER标注为命名实体
+           问题？？？？ --》 习近平主席：习近平修饰主席，但是习近平就是命名实体。后期修改：根据pos提取会有问题？因为会把主席这个词置为True
+           #Solution： 其实不用判断是否是 机构实体 ，只需要对偏正结构标记即可，从而避免对偏正结构进行重复的关系元组提取。
         Args:
             entity: WordUnit，待检验的实体
         Returns:
@@ -61,11 +69,26 @@ class ExtractByDSNF:
         head_word = entity.head_word  # 中心词
         if entity.dependency == 'ATT':
             if self.like_noun(head_word) and abs(entity.ID - head_word.ID) == 1:
+                # 处理机构命名实体分词被拆分情况，防止多次抽取
+                # start = min(entity.ID, head_word.ID)
+                # end = max(entity.ID, head_word.ID)
+                # debug_logger.debug((start, end))
+                # if (start-1, end-1) in [(item[1], item[2]) for item in self.sentence.nertags]:
+                #     self.sentence.is_extract_by_ne[head_word.ID-1] = True
+                # 标记所有的偏正部分，而不只是 机构命名实体
+                #self.sentence.is_extract_by_ne[head_word.ID-1] = True
                 return head_word
             else:
-                return entity
+                #return entity
+                return None
         else:
+            #return entity
             return entity
+
+    def expand_entity(self):
+        self.center_word_of_e1 = self.check_entity(self.entity1)
+        self.center_word_of_e2 = self.check_entity(self.entity2)
+
 
     def search_entity(self, modify):
         """根据偏正部分(也有可能是实体)找原实体
@@ -159,11 +182,14 @@ class ExtractByDSNF:
         Returns:
             *: bool，获得三元组(True)，未获得三元组(False)
         """
-        ent1 = self.check_entity(entity1)  # 该实例对应为"奥巴马"
-        # 该实例对应为"哈弗大学"，
-        # 但当"哈弗"的命名实体识别为"S-Ni"时，命名实体识别后将是："哈弗 大学"，因为：哈弗<-[ATT]-大学
-        # 得到的将是["奥巴马", "毕业于", "哈弗大学"]
-        ent2 = self.check_entity(entity2)
+        # ent1 = self.check_entity(entity1)  # 该实例对应为"奥巴马"
+        # # 该实例对应为"哈弗大学"，
+        # # 但当"哈弗"的命名实体识别为"S-Ni"时，命名实体识别后将是："哈弗 大学"，因为：哈弗<-[ATT]-大学
+        # # 得到的将是["奥巴马", "毕业于", "哈弗大学"]
+        # ent2 = self.check_entity(entity2)
+        # debug_logger.debug('SBV_CMP_POB - 偏正修正部分：e1:{}, e2:{}'.format(ent1.lemma, ent2.lemma))
+        ent1 = self.center_word_of_e1 if self.center_word_of_e1 else self.entity1
+        ent2 = self.center_word_of_e2 if self.center_word_of_e2 else self.entity2
         if ent2.dependency == 'POB' and ent2.head_word.dependency == 'CMP':
             if ent1.dependency == 'SBV' and ent1.head == ent2.head_word.head:
                 relations = []  # 实体间的关系
@@ -185,9 +211,11 @@ class ExtractByDSNF:
         Returns:
             *: bool，获得三元组(True)，未获得三元组(False)
         """
-        ent1 = self.check_entity(entity1)  # 偏正部分，若无偏正部分则就是原实体
-        ent2 = self.check_entity(entity2)
-        debug_logger.debug('偏正修正部分：e1:{}, e2:{}'.format(ent1.lemma, ent2.lemma))
+        # ent1 = self.check_entity(entity1)  # 偏正部分，若无偏正部分则就是原实体
+        # ent2 = self.check_entity(entity2)
+        # debug_logger.debug('SBV_VOB - 偏正修正部分：e1:{}, e2:{}'.format(ent1.lemma, ent2.lemma))
+        ent1 = self.center_word_of_e1 if self.center_word_of_e1 else self.entity1
+        ent2 = self.center_word_of_e2 if self.center_word_of_e2 else self.entity2
 
         if ent1.dependency == 'SBV' and ent2.dependency == 'VOB':
             # entity_coo不为空，存在并列
@@ -233,8 +261,11 @@ class ExtractByDSNF:
         entity2_list.append(entity2)
 
         # 实体补全(解决并列结构而增加)
-        ent_1 = self.check_entity(entity1)
-        ent_2 = self.check_entity(entity2)
+        # ent_1 = self.check_entity(entity1)
+        # ent_2 = self.check_entity(entity2)
+        # debug_logger.debug('determine_relation_SVB - 偏正修正部分：e1:{}, e2:{}'.format(ent1.lemma, ent2.lemma))
+        ent_1 = self.center_word_of_e1 if self.center_word_of_e1 else self.entity1
+        ent_2 = self.center_word_of_e2 if self.center_word_of_e2 else self.entity2
         # 华盛顿 警方
         # if ent_1 != entity1 and abs(ent_1.ID-entity1.ID) == 1 and (not self.is_entity(entity1.head_word)):
         #     entity1_list.append(entity1.head_word)
@@ -305,9 +336,11 @@ class ExtractByDSNF:
         Returns:
             *: bool，获得三元组(True)，未获得三元组(False)
         """
-        ent1 = self.check_entity(entity1)
-        ent2 = self.check_entity(entity2)
-
+        # ent1 = self.check_entity(entity1)
+        # ent2 = self.check_entity(entity2)
+        # debug_logger.debug('coordinate - 偏正修正部分：e1:{}, e2:{}'.format(ent1.lemma, ent2.lemma))
+        ent1 = self.center_word_of_e1 if self.center_word_of_e1 else self.entity1
+        ent2 = self.center_word_of_e2 if self.center_word_of_e2 else self.entity2
         # 习近平 主席 和 李克强 总理 访问 美国
         # 依据"李克强"(entiy1)和"美国"(entity2)，抽取三元组(李克强, 访问, 美国)
         # 如果存在并列依存，只会有entity1(ent1) <-[ATT]- entity2(ent2)
@@ -342,8 +375,11 @@ class ExtractByDSNF:
         Returns:
             *: bool，获得三元组(True)，未获得三元组(False)
         """
-        ent1 = self.check_entity(entity1)
-        ent2 = self.check_entity(entity2)
+        # ent1 = self.check_entity(entity1)
+        # ent2 = self.check_entity(entity2)
+        # debug_logger.debug('SBVorFOB_POB_VOB - 偏正修正部分：e1:{}, e2:{}'.format(ent1.lemma, ent2.lemma))
+        ent1 = self.center_word_of_e1 if self.center_word_of_e1 else self.entity1
+        ent2 = self.center_word_of_e2 if self.center_word_of_e2 else self.entity2
         if ent1.dependency == 'SBV' or ent1.dependency == 'FOB':
             if ent2.dependency == 'POB' and ent2.head_word.dependency == 'ADV':
                 if entity_coo:
@@ -375,8 +411,11 @@ class ExtractByDSNF:
         entity2_list.append(entity2)
 
         # 实体补全(解决并列结构而增加)
-        ent_1 = self.check_entity(entity1)
-        ent_2 = self.check_entity(entity2)
+        # ent_1 = self.check_entity(entity1)
+        # ent_2 = self.check_entity(entity2)
+        # debug_logger.debug('determine_relation_SVP - 偏正修正部分：e1:{}, e2:{}'.format(ent1.lemma, ent2.lemma))
+        ent_1 = self.center_word_of_e1 if self.center_word_of_e1 else self.entity1
+        ent_2 = self.center_word_of_e2 if self.center_word_of_e2 else self.entity2
 
         if ent_1 != entity1 and abs(ent_1.ID - entity1.ID) == 1:
             entity1_list.append(ent_1)
@@ -491,8 +530,11 @@ class ExtractByDSNF:
         Returns:
             *: bool，获得三元组(True)，未获得三元组(False)
         """
-        ent_1 = self.check_entity(entity1)
-        ent_2 = self.check_entity(entity2)
+        # ent_1 = self.check_entity(entity1)
+        # ent_2 = self.check_entity(entity2)
+        # debug_logger.debug('entity_de_entity_NNT - 偏正修正部分：e1:{}, e2:{}'.format(ent_1.lemma, ent_2.lemma))
+        ent_1 = self.center_word_of_e1 if self.center_word_of_e1 else self.entity1
+        ent_2 = self.center_word_of_e2 if self.center_word_of_e2 else self.entity2
         entity1_list = []
         entity1_list.append(entity1)
         entity2_list = []
