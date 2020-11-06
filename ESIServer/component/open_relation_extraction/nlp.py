@@ -66,9 +66,9 @@ class NLP:
         # for item in nertags:
         #     for i in range(item[1], item[2]+1):
         #         words[i].postag = ner2pos[item[0]]
-        return words
+        return words, nertags
 
-    def dependency(self, words, hidden):
+    def dependency(self, words, hidden, nertags):
         """
         根据dp结果，抽取words信息，用于之后的三元组抽取。（主要是词之间的依赖关系）
         :param hidden:
@@ -80,7 +80,7 @@ class NLP:
             for i in range(len(words[idx_sent])):
                 words[idx_sent][i].head = dep_sent[i][1]
                 words[idx_sent][i].dependency = dep_sent[i][2]
-            sentences.append(SentenceUnit(words[idx_sent]))
+            sentences.append(SentenceUnit(words[idx_sent], nertags[idx_sent]))
         return sentences
 
 

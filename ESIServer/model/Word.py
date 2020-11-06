@@ -24,7 +24,7 @@ class WordUnit:
     # 当前词语与中心词的依存关系
     dependency = '' # 每个词都有指向自己的唯一依存
 
-    def __init__(self, ID, lemma, postag, nertag='', head=0, head_word=None, dependency=''):
+    def __init__(self, ID, lemma, postag, nertag='', head=0, head_word=None, dependency='', hidden=None):
         self.ID = ID
         self.lemma = lemma
         self.postag = postag
@@ -32,6 +32,7 @@ class WordUnit:
         self.head = head
         self.head_word = head_word
         self.dependency = dependency
+        self.hidden = hidden
 
     def get_id(self):
         return self.ID
@@ -79,9 +80,6 @@ class WordUnit:
             self.dependency,
             chr(12288)
         )
-
-
-
 
     def __str__(self):
         return self.lemma

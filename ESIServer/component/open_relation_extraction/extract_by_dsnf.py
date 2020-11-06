@@ -35,7 +35,11 @@ class ExtractByDSNF:
         # self.num = num
         self.triples = []
         self.expand_entity()    # 处理e1，e2偏正结构
-        #debug_logger.debug(sentence.nertags)
+        debug_logger.debug('偏正结构对应的中心词：E1: {:s}, E2: {:s}'.format(
+            str(self.center_word_of_e1),
+            str(self.center_word_of_e2)
+        ))
+        # debug_logger.debug(sentence.nertags)
         #debug_logger.debug(sentence.is_extract_by_ne)
 
     def is_entity(self, entry):
@@ -76,14 +80,14 @@ class ExtractByDSNF:
                 # if (start-1, end-1) in [(item[1], item[2]) for item in self.sentence.nertags]:
                 #     self.sentence.is_extract_by_ne[head_word.ID-1] = True
                 # 标记所有的偏正部分，而不只是 机构命名实体
-                #self.sentence.is_extract_by_ne[head_word.ID-1] = True
+                self.sentence.has_extracted[head_word.ID-1] = True
                 return head_word
             else:
                 #return entity
                 return None
         else:
             #return entity
-            return entity
+            return None
 
     def expand_entity(self):
         self.center_word_of_e1 = self.check_entity(self.entity1)
@@ -357,10 +361,13 @@ class ExtractByDSNF:
         # 依据"习近平"(entity1)和"英国"(entity2)，抽取三元组(习近平, 访问, 英国)
         elif ent2.dependency == 'COO' and (not self.SBV_VOB(entity1, entity2)):
             # 并列宾语[DSNF6]
+            debug_logger.debug('---------并列宾语-------1')
             if ent2.head_word.dependency == 'VOB' or ent2.head_word.dependency == 'POB':
                 # ent2所并列实体
                 entity_object = self.search_entity(ent2.head_word)
+                debug_logger.debug('---------并列宾语-------2'+str(entity1)+str(entity_object)+str(entity2))
                 if not self.SBV_VOB(entity1, entity_object, entity_coo=entity2, entity_flag='object'):
+                    debug_logger.debug('---------并列宾语-------3')
                     is_ok = self.SBVorFOB_POB_VOB(entity1, entity_object, entity_coo=entity2, entity_flag='object')
         return False
 
@@ -450,7 +457,7 @@ class ExtractByDSNF:
                         continue
                     else:
                         coo_flag = False
-                        break;
+                        break
                 i += 1
 
         # 如果满足动词并列要求

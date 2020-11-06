@@ -34,8 +34,16 @@ class Extractor:
 
         for i, entity_pair in enumerate(self.entity_pairs):
             debug_logger.debug("分析实体对儿{:>3d}： {:s}".format(i, str(entity_pair)))
+            debug_logger.debug(sentence.has_extracted)
             entity1 = entity_pair.entity1
             entity2 = entity_pair.entity2
+            id1 = entity1.ID-1
+            id2 = entity2.ID-1
+            if sentence.has_extracted[id1] == True or sentence.has_extracted[id2]:
+                debug_logger.debug("{:s} is extracted by 偏正结构, continue...".format(
+                    str(entity1) if sentence.has_extracted[id1] else str(entity2)
+                ))
+                continue
 
             extract_dsnf = ExtractByDSNF(origin_sentence, sentence, entity1, entity2)
             # ? 一个entity pair可能提取出多个triples吗？

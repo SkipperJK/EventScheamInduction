@@ -5,13 +5,17 @@ class SentenceUnit:
     """句子单元组成，每行为一个词单元，并获得每个词头部的词单元
     Attributes:
         words: WordUnit list，词单元列表
+        nertags: name entities tags， 元组列表 [('Ni', 3, 4)]
+        isNE: bool list, 表示单词是否已经通过命名实体提取， 例如：同济大学，通过同济提取同济大学后不需要再单独分析大学
     """
     words = None
 
-    def __init__(self, words):
+    def __init__(self, words, nertags=None):
         self.words = words
         for i in range(len(words)):
             self.words[i].head_word = self.get_word_by_id(self.words[i].head)
+        #self.nertags = nertags
+        self.has_extracted = [False for _ in range(len(words))]  # 是否通过偏正短语已经被提取
 
     def get_word_by_id(self, id):
         """根据id获得词单元word
@@ -54,6 +58,16 @@ class SentenceUnit:
         for word in self.words:
             lemmas += word.lemma + '\t'
         return lemmas.rstrip('\t')
+
+    # def get_name_entities(self):
+    #     """根据命名实体标记获取命名实体
+    #     :return:
+    #     """
+    #     name_entities = []
+    #     for tag in self.nertags:
+    #         name_entities.append((tag[0], ''.join([self.words[idx].lemma for idx in range(tag[1], tag[2]+1)])))
+    #     return name_entities
+
 
 
 if __name__ == '__main__':
