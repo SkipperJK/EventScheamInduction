@@ -10,7 +10,7 @@ class SentenceUnit:
     """
     words = None
 
-    def __init__(self, words, nertags=None):
+    def __init__(self, words):
         self.words = words
         for i in range(len(words)):
             self.words[i].head_word = self.get_word_by_id(self.words[i].head)
