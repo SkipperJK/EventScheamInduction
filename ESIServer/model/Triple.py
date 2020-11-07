@@ -6,12 +6,12 @@ class Triple:
 
     def __init__(self, entity1_list, relationship_list, entity2_list, num=0, doc_num=0, sent_num=0):
         """
-        关系三元组，entity和relationship都可能是由多个word组成
+        关系三元组，entity和relationship由单个/多个word组成，将单个的也转换为list
         :param doc_num: int
         :param sent_num: int
-        :param entity1_list: WordUnit list
-        :param relationship_word: WordUnit list
-        :param entity2_list: WordUnit list
+        :param entity1_list: WordUnit list / WordUnit
+        :param relationship_word: WordUnit list / WordUnit
+        :param entity2_list: WordUnit list / WordUnit
         """
         self.num = num
         self.doc_num = doc_num
@@ -29,28 +29,48 @@ class Triple:
         else:
             self.entity2_list = [entity2_list]
 
-    def generalize(self):
-        pass
+        self.e1_lemma = ''.join([word.lemma for word in self.entity1_list])
+        self.relation_lemma = ''.join([word.lemma for word in self.relationship_list])
+        self.e2_lemma = ''.join([word.lemma for word in self.entity2_list])
+        self.generalization()
+
+    def generalization(self):
+        """
+        关系元组一般化，记录元组中两个实体的命名实体类型
+        :return:
+        """
+        self.entity1_nertype = ''
+        self.entity2_nertype = ''
+        nertag2type = {'Nh':'person', 'Ns':'location', 'Ni':'organization'}
+        for entity in self.entity1_list:
+            if entity.nertag:
+                self.entity1_nertype = nertag2type[entity.nertag]
+                break
+        for entity in self.entity2_list:
+            if entity.nertag:
+                self.entity2_nertype = nertag2type[entity.nertag]
+                break
 
 
     def to_string(self):
-        # 使用中文空格 chr(12288) 填充，实现中文对齐
-        return "DocID: {0:>5d}, SentenceID: {1:>3d}, Num: {2:2d}, E1: {3:{6}>10s}, Rel: {4:{6}>10s}, E2: {5:{6}>10s}".format(
+        return "DocID: {0:>5d}, SentenceID: {1:>3d}, Num: {2:2d}, {3:s}".format(
             self.doc_num,
             self.sent_num,
             self.num,
-            ''.join([word.lemma for word in self.entity1_list]),
-            ''.join([word.lemma for word in self.relationship_list]),
-            ''.join([word.lemma for word in self.entity2_list]),
-            chr(12288)
+            str(self)
         )
 
 
     def __str__(self):
-        return "[{}, {}, {}]".format(
-            ''.join([word.lemma for word in self.entity1_list]),
-            ''.join([word.lemma for word in self.relationship_list]),
-            ''.join([word.lemma for word in self.entity2_list])
+        # 使用中文空格 chr(12288) 填充，实现中文对齐
+        return "(E1: {0:{6}>10s}, Rel: {1:{6}>10s}, E2: {2:{6}>10s}), Generalization: <{3:s}>, {4:s}, <{5:s}>".format(
+            self.e1_lemma,
+            self.relation_lemma,
+            self.e2_lemma,
+            self.entity1_nertype,
+            self.relation_lemma,
+            self.entity2_nertype,
+            chr(12288)
         )
 
     __repr__ = __str__  # 控制台输出时默认调用
