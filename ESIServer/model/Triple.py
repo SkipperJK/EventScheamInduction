@@ -4,6 +4,40 @@ from ESIServer.model.Word import WordUnit
 
 class Triple:
 
+    class GeneralizationTriple:
+        """
+        一个元组可以泛化成多个元组
+        """
+        def __init__(self, doc_num, sent_num, arg1, rel, arg2):
+            self.doc_num = doc_num
+            self.sent_num = sent_num
+            self.arg1 = arg1
+            self.rel = rel
+            self.arg2 = arg2
+
+        def get_triple(self):
+            return '{:s},{:s},{:s}'.format(
+                self.arg1.strip(),
+                self.rel.strip(),
+                self.arg2.strip()
+            )
+
+        def to_string(self):
+            return "doc: {}, sent: {} Triple: {}".format(
+                self.doc_num,
+                self.sent_num,
+                str(self)
+            )
+
+        def __str__(self):
+            # 使用中文空格 chr(12288) 填充，实现中文对齐
+            return "({:s},{:s},{:s})".format(
+                self.arg1,
+                self.rel,
+                self.arg2
+            )
+
+
     def __init__(self, entity1_list, relationship_list, entity2_list, num=0, doc_num=0, sent_num=0):
         """
         关系三元组，entity和relationship由单个/多个word组成，将单个的也转换为list
@@ -32,11 +66,13 @@ class Triple:
         self.e1_lemma = ''.join([word.lemma for word in self.entity1_list])
         self.relation_lemma = ''.join([word.lemma for word in self.relationship_list])
         self.e2_lemma = ''.join([word.lemma for word in self.entity2_list])
-        self.generalization()
+        self.gts = self.generalization()
 
     def generalization(self):
         """
-        关系元组一般化，记录元组中两个实体的命名实体类型
+        关系元组一般化，
+            1 记录元组中两个实体的命名实体类型
+            2 将关系词简化，去掉介词 --- TODO
         :return:
         """
         self.entity1_nertype = ''
@@ -50,6 +86,16 @@ class Triple:
             if entity.nertag:
                 self.entity2_nertype = nertag2type[entity.nertag]
                 break
+
+        gts = []
+        gts.append(self.GeneralizationTriple(self.doc_num, self.sent_num, self.e1_lemma, self.relation_lemma, self.e2_lemma))
+        if self.entity1_nertype:
+            gts.append(self.GeneralizationTriple(self.doc_num, self.sent_num, self.entity1_nertype, self.relation_lemma, self.e2_lemma))
+        if self.entity2_nertype:
+            gts.append(self.GeneralizationTriple(self.doc_num, self.sent_num, self.e1_lemma, self.relation_lemma, self.entity2_nertype))
+        if self.entity1_nertype and self.entity2_nertype:
+            gts.append(self.GeneralizationTriple(self.doc_num, self.sent_num, self.entity1_nertype, self.relation_lemma, self.entity2_nertype))
+        return gts
 
 
     def to_string(self):
@@ -67,9 +113,9 @@ class Triple:
             self.e1_lemma,
             self.relation_lemma,
             self.e2_lemma,
-            self.entity1_nertype,
+            self.entity1_nertype if self.entity1_nertype else self.e1_lemma,
             self.relation_lemma,
-            self.entity2_nertype,
+            self.entity2_nertype if self.entity2_nertype else self.e2_lemma,
             chr(12288)
         )
 

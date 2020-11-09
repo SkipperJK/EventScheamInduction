@@ -16,20 +16,29 @@ def extract(origin_sentences):
     words_nertag = nlp.nertag(words_postag, hidden)
     sentences = nlp.dependency(words_nertag, hidden)
 
-    all_triples = []
+    triples = []
     num = 1
     for idx_sent, sent in enumerate(origin_sentences):
         debug_logger.debug(sent)
         for word in sentences[idx_sent].words:
             debug_logger.debug(word.to_string())
-        triples = extractor.extract(sent, sentences[idx_sent])
-        for triple in triples:
+        triples_of_sent = extractor.extract(sent, sentences[idx_sent])
+        for triple in triples_of_sent:
             triple.sent_num = idx_sent+1 # 标记句子编号
             triple.num = num             # 标记元组编号
             debug_logger.debug(triple.to_string())
             num += 1
-        all_triples.extend(triples)
-    return all_triples
+        triples.append(triples_of_sent)
+
+    root_logger.info('Generalizing triples...')
+    generalization_triples = []
+    for triples_of_sent in triples:
+        tmp = []
+        for triple in triples_of_sent:
+            tmp.extend(triple.gts)
+        generalization_triples.append(tmp)
+
+    return generalization_triples
 
 
 
@@ -52,9 +61,11 @@ class TestExtract(unittest.TestCase):
             "奥巴马毕业于哈佛大学。",
             "习近平主席和李克强总理接见普京。",
             "习近平访问了美国和英国。",
-            "高克访问中国，并在同济大学发表演讲。"
+            "高克访问中国，并在同济大学发表演讲。",
+            "李明出生于1999年。"
         ]
 
         triples = extract(origin_sentences)
-        for triple in triples:
-            root_logger.info(triple.to_string())
+        for triples_of_sent in triples:
+            for triple in triples_of_sent:
+                root_logger.info(triple.to_string())
