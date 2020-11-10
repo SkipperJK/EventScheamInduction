@@ -17,17 +17,11 @@ def extract(origin_sentences):
     sentences = nlp.dependency(words_nertag, hidden)
 
     triples = []
-    num = 1
     for idx_sent, sent in enumerate(origin_sentences):
         debug_logger.debug(sent)
         for word in sentences[idx_sent].words:
             debug_logger.debug(word.to_string())
-        triples_of_sent = extractor.extract(sent, sentences[idx_sent])
-        for triple in triples_of_sent:
-            triple.sent_num = idx_sent+1 # 标记句子编号
-            triple.num = num             # 标记元组编号
-            debug_logger.debug(triple.to_string())
-            num += 1
+        triples_of_sent = extractor.extract(sent, sentences[idx_sent], idx_sent)
         triples.append(triples_of_sent)
 
     root_logger.info('Generalizing triples...')

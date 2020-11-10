@@ -38,7 +38,7 @@ class Triple:
             )
 
 
-    def __init__(self, entity1_list, relationship_list, entity2_list, num=0, doc_num=0, sent_num=0):
+    def __init__(self, entity1_list, relationship_list, entity2_list, sent_num=0, doc_num=0):
         """
         关系三元组，entity和relationship由单个/多个word组成，将单个的也转换为list
         :param doc_num: int
@@ -47,7 +47,6 @@ class Triple:
         :param relationship_word: WordUnit list / WordUnit
         :param entity2_list: WordUnit list / WordUnit
         """
-        self.num = num
         self.doc_num = doc_num
         self.sent_num = sent_num
         if isinstance(entity1_list, list):
@@ -99,10 +98,9 @@ class Triple:
 
 
     def to_string(self):
-        return "DocID: {0:>5d}, SentenceID: {1:>3d}, Num: {2:2d}, {3:s}".format(
+        return "DocID: {0:>5d}, SentenceID: {1:>3d}, {2:s}".format(
             self.doc_num,
             self.sent_num,
-            self.num,
             str(self)
         )
 
@@ -129,7 +127,7 @@ class TESTTriple(unittest.TestCase):
         e1 = WordUnit(1, "美国", "nh")
         relationship = WordUnit(2, "总统", 'n')
         e2 = WordUnit(3, "特朗普", 'ni')
-        t = Triple(1, 1, e1, relationship, e2)
+        t = Triple(e1, relationship, e2, 0, 0)
         print(t)
 
 
