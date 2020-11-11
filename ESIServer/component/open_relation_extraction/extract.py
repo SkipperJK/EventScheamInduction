@@ -9,7 +9,13 @@ debug_logger = logging.getLogger('debug')
 debug_logger.setLevel(logging.INFO)
 root_logger = logging.getLogger('root')
 
-def extract(origin_sentences):
+def extract(origin_sentences, idx_document=0):
+    """
+    对一个document中的多个句子进行关系元组抽取
+    :param origin_sentences: list
+    :param idx_document: int
+    :return: Triple的二维list
+    """
     root_logger.info('Starting extract triples ...')
     lemmas, hidden = nlp.segment(origin_sentences)
     words_postag = nlp.postag(lemmas, hidden)
@@ -21,7 +27,7 @@ def extract(origin_sentences):
         debug_logger.debug(sent)
         for word in sentences[idx_sent].words:
             debug_logger.debug(word.to_string())
-        triples_of_sent = extractor.extract(sent, sentences[idx_sent], idx_sent)
+        triples_of_sent = extractor.extract(sent, sentences[idx_sent], idx_sent, idx_document)
         triples.append(triples_of_sent)
 
     root_logger.info('Generalizing triples...')

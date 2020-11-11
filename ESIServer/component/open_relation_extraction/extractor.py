@@ -18,7 +18,7 @@ class Extractor:
     entity_pairs = []  # 存储该句子中(满足一定条件)的可能实体对
 
     # def extract(self, origin_sentence, sentence, file_path, num):
-    def extract(self, origin_sentence, sentence, idx_sentence=0, idx_documnet=0):
+    def extract(self, origin_sentence, sentence, idx_sentence=0, idx_document=0):
         """
         Args:
             origin_sentence: string，原始句子
@@ -45,7 +45,7 @@ class Extractor:
                 ))
                 continue
 
-            extract_dsnf = ExtractByDSNF(origin_sentence, sentence, entity1, entity2, idx_sentence, idx_documnet)
+            extract_dsnf = ExtractByDSNF(origin_sentence, sentence, entity1, entity2, idx_sentence, idx_document)
             # ? 一个entity pair可能提取出多个triples吗？
             # [DSNF2|DSNF7]，部分覆盖[DSNF5|DSNF6]
             if extract_dsnf.SBV_VOB(entity1, entity2):
