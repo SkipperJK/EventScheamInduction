@@ -6,8 +6,8 @@ from ESIServer.component.open_relation_extraction.extractor import Extractor
 nlp = NLP()
 extractor = Extractor()
 debug_logger = logging.getLogger('debug')
-debug_logger.setLevel(logging.INFO)
 root_logger = logging.getLogger('root')
+trace_logger = logging.getLogger('trace')
 
 def extract(origin_sentences, idx_document=0):
     """
@@ -16,7 +16,7 @@ def extract(origin_sentences, idx_document=0):
     :param idx_document: int
     :return: Triple的二维list
     """
-    root_logger.info('Starting extract triples ...')
+    trace_logger.info('Starting extract triples ...')
     lemmas, hidden = nlp.segment(origin_sentences)
     words_postag = nlp.postag(lemmas, hidden)
     words_nertag = nlp.nertag(words_postag, hidden)
@@ -30,7 +30,7 @@ def extract(origin_sentences, idx_document=0):
         triples_of_sent = extractor.extract(sent, sentences[idx_sent], idx_sent, idx_document)
         triples.append(triples_of_sent)
 
-    root_logger.info('Generalizing triples...')
+    trace_logger.info('Generalizing triples...')
     generalization_triples = []
     for triples_of_sent in triples:
         tmp = []
