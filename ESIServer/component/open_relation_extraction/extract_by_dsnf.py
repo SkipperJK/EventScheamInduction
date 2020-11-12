@@ -553,11 +553,11 @@ class ExtractByDSNF:
             # 豫Ｆ××××× 号 重型 半挂⻋
             # 鄂Ｂ××××× 小轿车
             if ent_1.dependency == 'ATT' and abs(ent_1.head - entity1.ID) <= 3:
-                entity1_list.append(ent_1.head)
+                entity1_list.append(ent_1.head_word)
         if ent_2 != entity2 and abs(ent_2.ID - entity2.ID) == 1:
             entity2_list.append(ent_2)
             if ent_1.dependency == 'ATT' and abs(ent_1.head - entity1.ID) <= 3:
-                entity2_list.append(ent_1.head)
+                entity2_list.append(ent_1.head_word)
 
         # 厦门大学的朱崇实校长
         ok = False
