@@ -8,6 +8,9 @@ extractor = Extractor()
 debug_logger = logging.getLogger('debug')
 root_logger = logging.getLogger('root')
 trace_logger = logging.getLogger('trace')
+if 'DEBUG' not in locals().keys():
+    DEBUG = True if debug_logger.level == logging.DEBUG else False
+
 
 def extract(origin_sentences, idx_document=0):
     """
@@ -24,11 +27,17 @@ def extract(origin_sentences, idx_document=0):
 
     triples = []
     for idx_sent, sent in enumerate(origin_sentences):
-        debug_logger.debug(sent)
-        for word in sentences[idx_sent].words:
-            debug_logger.debug(word.to_string())
+        if DEBUG:
+            debug_logger.debug(sent)
+            for word in sentences[idx_sent].words:
+                debug_logger.debug(word.to_string())
         triples_of_sent = extractor.extract(sent, sentences[idx_sent], idx_sent, idx_document)
         triples.append(triples_of_sent)
+    if DEBUG:
+        for ts_of_sent in triples:
+            for t in ts_of_sent:
+                debug_logger.debug(t.to_string())
+
 
     trace_logger.info('Generalizing triples...')
     generalization_triples = []
