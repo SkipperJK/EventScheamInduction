@@ -24,13 +24,14 @@ class ExtractByDSNF:
     # num = 1  # 三元组数量编号
 
     # def __init__(self, origin_sentence, sentence, entity1, entity2, file_path, num):
-    def __init__(self, origin_sentence, sentence, entity1, entity2, idx_sentence=0, idx_document=0):
+    def __init__(self, origin_sentence, sentence, entity1, entity2, idx_sentence=0, idx_document=0, num=0):
         self.origin_sentence = origin_sentence
         self.sentence = sentence
         self.entity1 = entity1
         self.entity2 = entity2
         self.idx_sentence = idx_sentence
         self.idx_document = idx_document
+        self.num = num
         self.center_word_of_e1 = None   # 偏正结构的中心词
         self.center_word_of_e2 = None   # 偏正结构的中心词
         # self.file_path = file_path
@@ -149,7 +150,8 @@ class ExtractByDSNF:
         Returns:
             True: 获得三元组(True)
         """
-        self.triples.append(Triple(entity1, relation, entity2, self.idx_sentence, self.idx_document))
+        self.triples.append(Triple(entity1, relation, entity2, self.idx_sentence, self.idx_document, self.num))
+        self.num += 1
         triple = dict()
         # triple['num'] = self.num
         # self.num += 1

@@ -16,6 +16,7 @@ class Extractor:
     """
     entities = []  # 存储该句子中的可能实体
     entity_pairs = []  # 存储该句子中(满足一定条件)的可能实体对
+    num = 0 # triple的num从0开始
 
     # def extract(self, origin_sentence, sentence, file_path, num):
     def extract(self, origin_sentence, sentence, idx_sentence=0, idx_document=0):
@@ -45,7 +46,7 @@ class Extractor:
                 ))
                 continue
 
-            extract_dsnf = ExtractByDSNF(origin_sentence, sentence, entity1, entity2, idx_sentence, idx_document)
+            extract_dsnf = ExtractByDSNF(origin_sentence, sentence, entity1, entity2, idx_sentence, idx_document, self.num)
             # ? 一个entity pair可能提取出多个triples吗？
             # [DSNF2|DSNF7]，部分覆盖[DSNF5|DSNF6]
             if extract_dsnf.SBV_VOB(entity1, entity2):
@@ -65,6 +66,7 @@ class Extractor:
             if extract_dsnf.entity_de_entity_NNT(entity1, entity2):
                 pass
             if extract_dsnf.triples != None:
+                self.num += len(extract_dsnf.triples)
                 self.triples.extend(extract_dsnf.triples)
         return self.triples
 

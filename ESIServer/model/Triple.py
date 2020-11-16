@@ -1,6 +1,7 @@
 import unittest
+import logging
 from ESIServer.model.Word import WordUnit
-
+debug_logger = logging.getLogger('debug')
 
 class Triple:
 
@@ -8,7 +9,8 @@ class Triple:
         """
         一个元组可以泛化成多个元组
         """
-        def __init__(self, doc_num, sent_num, arg1, rel, arg2):
+        def __init__(self, num, doc_num, sent_num, arg1, rel, arg2):
+            self.num = num
             self.doc_num = doc_num
             self.sent_num = sent_num
             self.arg1 = arg1
@@ -23,7 +25,8 @@ class Triple:
             )
 
         def to_string(self):
-            return "doc: {}, sent: {} Triple: {}".format(
+            return "num: {}, doc: {}, sent: {} Triple: {}".format(
+                self.num,
                 self.doc_num,
                 self.sent_num,
                 str(self)
@@ -38,7 +41,7 @@ class Triple:
             )
 
 
-    def __init__(self, entity1_list, relationship_list, entity2_list, sent_num=0, doc_num=0):
+    def __init__(self, entity1_list, relationship_list, entity2_list, sent_num=0, doc_num=0, num=0):
         """
         关系三元组，entity和relationship由单个/多个word组成，将单个的也转换为list
         :param doc_num: int
@@ -49,6 +52,7 @@ class Triple:
         """
         self.doc_num = doc_num
         self.sent_num = sent_num
+        self.num = num
         if isinstance(entity1_list, list):
             self.entity1_list = entity1_list
         else:
@@ -62,6 +66,7 @@ class Triple:
         else:
             self.entity2_list = [entity2_list]
 
+        debug_logger.debug('Entity 是什么：：：{},{}'.format(self.entity1_list, self.entity2_list))
         self.e1_lemma = ''.join([word.lemma for word in self.entity1_list])
         self.relation_lemma = ''.join([word.lemma for word in self.relationship_list])
         self.e2_lemma = ''.join([word.lemma for word in self.entity2_list])
@@ -87,18 +92,19 @@ class Triple:
                 break
 
         gts = []
-        gts.append(self.GeneralizationTriple(self.doc_num, self.sent_num, self.e1_lemma, self.relation_lemma, self.e2_lemma))
+        gts.append(self.GeneralizationTriple(self.num, self.doc_num, self.sent_num, self.e1_lemma, self.relation_lemma, self.e2_lemma))
         if self.entity1_nertype:
-            gts.append(self.GeneralizationTriple(self.doc_num, self.sent_num, self.entity1_nertype, self.relation_lemma, self.e2_lemma))
+            gts.append(self.GeneralizationTriple(self.num, self.doc_num, self.sent_num, self.entity1_nertype, self.relation_lemma, self.e2_lemma))
         if self.entity2_nertype:
-            gts.append(self.GeneralizationTriple(self.doc_num, self.sent_num, self.e1_lemma, self.relation_lemma, self.entity2_nertype))
+            gts.append(self.GeneralizationTriple(self.num, self.doc_num, self.sent_num, self.e1_lemma, self.relation_lemma, self.entity2_nertype))
         if self.entity1_nertype and self.entity2_nertype:
-            gts.append(self.GeneralizationTriple(self.doc_num, self.sent_num, self.entity1_nertype, self.relation_lemma, self.entity2_nertype))
+            gts.append(self.GeneralizationTriple(self.num, self.doc_num, self.sent_num, self.entity1_nertype, self.relation_lemma, self.entity2_nertype))
         return gts
 
 
     def to_string(self):
-        return "DocID: {0:>5d}, SentenceID: {1:>3d}, {2:s}".format(
+        return "Num:{0:>3d}, DocID: {1:>3d}, SentenceID: {2:>3d}, {3:s}".format(
+            self.num,
             self.doc_num,
             self.sent_num,
             str(self)
@@ -118,6 +124,36 @@ class Triple:
         )
 
     __repr__ = __str__  # 控制台输出时默认调用
+
+
+class UniqueTriple:
+
+    def __init__(self, arg1:str, rel:str, arg2:str, id:int=0):
+        """
+        每个triple都是唯一的。
+        :param id: int
+        :param arg1: str
+        :param rel: str
+        :param arg2: str
+        """
+        self.id = id
+        self.arg1 = arg1
+        self.rel = rel
+        self.arg2 = arg2
+
+    def to_string(self):
+        return "{:d}:{:s}".format(self.id, str(self))
+
+    def __str__(self):
+        return "{:s},{:s},{:s}".format(self.arg1, self.rel, self.arg2)
+
+    # 自定义__hash__,__eq__实现作为dict的key
+    def __hash__(self):
+        return hash(str(self))
+
+    def __eq__(self, other):
+        return str(self) == str(other)
+
 
 
 
@@ -154,3 +190,11 @@ class TESTTriple(unittest.TestCase):
         json.loads(json_str, object_hook=handle)
 
 
+    def test_unique_triple(self):
+        ut = UniqueTriple('arg1', 'rel', 'arg2')
+        uto = UniqueTriple('arg1', 'rel', 'arg2')
+        print(ut)
+        # 作为key
+        d = dict()
+        d[ut] = 10
+        print(d[uto])
