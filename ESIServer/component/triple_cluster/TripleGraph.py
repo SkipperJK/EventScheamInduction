@@ -29,6 +29,7 @@ class TripleGraph:
         trace_logger.info("Calculate co-occurrence count...")
         self.co_occurrence_table = self.calculate_co_occurrence_table()
         self.triple_condition_prob = self.calculate_conditional_probability()
+        self.edge_weight = self.calculate_undirected_edge_weight()
 
 
     def get_unique_triples(self):
@@ -130,6 +131,33 @@ class TripleGraph:
         )
 
         return triple_condition_prob
+
+
+    def calculate_undirected_edge_weight(self):
+        """
+        计算无向边的权重
+        SCP(T,T') = P(T'|T) P(T|T')
+        :return:
+        """
+        trace_logger.info("Calculating edge weight...")
+        num_uts = len(self.unique_triples)
+        edge_weight = np.zeros((num_uts, num_uts))
+        debug_logger.debug(
+            "Init edge_weight: {}".format(edge_weight)
+        )
+        for i in range(len(self.unique_triples)):
+            for j in range(i, len(self.unique_triples)):
+                edge_weight[i][j] = self.triple_condition_prob[i][j]*self.triple_condition_prob[j][i]
+                edge_weight[j][i] = edge_weight[i][j]
+        debug_logger.debug(
+            "edge_weight: {}".format(edge_weight)
+        )
+
+        return edge_weight
+
+
+
+
 
 
 class TestTripleGraph(TestCase):
