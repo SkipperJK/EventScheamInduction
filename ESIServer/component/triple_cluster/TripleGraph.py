@@ -28,6 +28,7 @@ class TripleGraph:
         self.triple_count_dict = self.get_unique_triples()
         trace_logger.info("Calculate co-occurrence count...")
         self.co_occurrence_table = self.calculate_co_occurrence_table()
+        self.triple_condition_prob = self.calculate_conditional_probability()
 
 
     def get_unique_triples(self):
@@ -81,7 +82,54 @@ class TripleGraph:
         return co_occurrence_table
 
 
+    def calculate_conditional_probability(self, sigma=0.05, alpha=0.5):
+        """
+        计算triple bi-gram的条件概率
+        P_k(T'|T)： T之后距离为k的T'的条件概率     (#(T,T',k)+\sigma) / (\sum_{T'' \in V} #(T,T'',k) + \sigma |V|
+        P(T'|T) : P_k的所有k下的加权
+        :return:
+        """
+        trace_logger.info("Calculating conditional probability...")
+        num_uts = len(self.unique_triples)
+        t_k_count = np.zeros((num_uts, self.k))  # \sum_{T'' \in V} #(T,T'',k)
+        t1_t2_k_prob = np.zeros((num_uts, num_uts, self.k))  # P_k(t2|t1)  t2在t1条件下且距离为k的条件概率
+        triple_condition_prob = np.zeros((num_uts, num_uts))  # [T][T'] -> P(T'|T)
+        debug_logger.debug(
+            "Init t_k_count: {} \n Init t1_t2_k_prob: {} \n Init triple_condition_prob: {}".format(
+                t_k_count, t1_t2_k_prob, triple_condition_prob)
+        )
 
+        for triple_bigram in self.co_occurrence_table:
+            id1 = triple_bigram.id_t1
+            dist = triple_bigram.dist
+            t_k_count[id1][dist - 1] += triple_bigram.count  # 统计t后距离为k的所有triple的个数（作为条件概率的分母）
+        debug_logger.debug(
+            "t_k_count: {}".format(t_k_count)
+        )
+
+        for triple_bigram in self.co_occurrence_table:
+            id1 = triple_bigram.id_t1
+            id2 = triple_bigram.id_t2
+            dist = triple_bigram.dist
+            t1_t2_k_prob[id1][id2][dist - 1] = (triple_bigram.count + sigma) / (
+                        t_k_count[id1][dist - 1] + num_uts * sigma)
+        indices_sat = np.where(t1_t2_k_prob == 0)  # 平滑处理：共现为0的
+        for id1, id2, k in zip(indices_sat[0], indices_sat[1], indices_sat[2]):
+            t1_t2_k_prob[id1][id2][k] = sigma / (sum(t1_t2_k_prob[id1, :, k]) + num_uts * sigma)
+        debug_logger.debug(
+            "t1_t2_k_prob: {}".format(t1_t2_k_prob)
+        )
+
+        divided = sum([np.power(alpha, i) for i in range(1, self.k + 1)])
+        for id1 in range(0, num_uts):
+            for id2 in range(0, num_uts):
+                tmp = sum([np.power(alpha, i) * t1_t2_k_prob[id1][id2][i - 1] for i in range(1, self.k + 1)])
+                triple_condition_prob[id1][id2] = tmp / divided
+        debug_logger.debug(
+            "triple_condition_prob: {}".format(triple_condition_prob)
+        )
+
+        return triple_condition_prob
 
 
 class TestTripleGraph(TestCase):
