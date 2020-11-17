@@ -30,6 +30,10 @@ class TripleGraph:
         self.co_occurrence_table = self.calculate_co_occurrence_table()
         self.triple_condition_prob = self.calculate_conditional_probability()
         self.edge_weight = self.calculate_undirected_edge_weight()
+        self.triples_of_events = []
+        seeds = self.top_n_nodes(self.edge_weight, num_seeds=num_seeds)
+        for seed in seeds:
+            self.triples_of_events.append(self.get_triples_of_event(seed, topN))
 
 
     def get_unique_triples(self):
@@ -156,7 +160,63 @@ class TripleGraph:
         return edge_weight
 
 
+    def top_n_nodes(self, edge_weight, num_seeds=3):
+        """
+        选出具有代表行的triple, 将每个点相连的边按照权重排序，只比较Top25条边的和
+        :param edge_weight: ndarray
+        :param n:  int
+        :return: list
+        """
+        # vertex_weight.sort(axis=1)
+        vertex_weight = edge_weight.sum(axis=1)
+        idx_sorted = np.argsort(-vertex_weight)  # 降序 == 取负升序
 
+        return idx_sorted.tolist()[:num_seeds]
+
+
+    def subgraph(self, seed, hops=2):
+        """
+        对种子点构建两跳之内的子图 （由于平滑处理之后的不好判断哪些点之间没有边，因此可以根据非泛化之间来找两跳之内的子图）
+        :return:
+        """
+        vertices_subgraph = []
+        for idx, weight in enumerate(self.edge_weight[seed]):
+            if weight != 0:
+                vertices_subgraph.append(idx)
+        vertices_subgraph = set(vertices_subgraph)
+        vertices_subgraph = list(vertices_subgraph)
+        for vertex in vertices_subgraph:
+            for idx, weight in enumerate(self.edge_weight[vertex]):
+                if weight != 0:
+                    vertices_subgraph.append(idx)
+        vertices_subgraph = set(vertices_subgraph)
+        edge_weigth_subgraph = np.zeros((len(vertices_subgraph), len(vertices_subgraph)))
+        idx2vertex = {i: vectex for i, vectex in enumerate(vertices_subgraph)}
+        for idx1 in range(len(vertices_subgraph)):
+            for idx2 in range(len(vertices_subgraph)):
+                edge_weigth_subgraph[idx1][idx2] = self.edge_weight[idx2vertex[idx1]][idx2vertex[idx2]]
+
+        return vertices_subgraph, edge_weigth_subgraph
+
+
+    def get_triples_of_event(self, seed_vertex, topN=10):
+        """
+        先得到种子点，然后执行personal PageRank得到与种子点相关的triples
+        :return:
+        """
+        triples_of_event = []
+        topN = topN if topN < len(self.unique_triples) else len(self.unique_triples)
+        pagerank = PageRank()
+        scores = pagerank.fit_transform(self.edge_weight, {seed_vertex: 1})  # 对每个种子点运行Personal PageRank
+        idx_sorted = np.argsort(-scores)
+        for idx in idx_sorted[:topN]:
+            triples_of_event.append(self.unique_triples[idx])
+
+        debug_logger.debug("seed vertex: {}".format(seed_vertex))
+        for triple in triples_of_event:
+            debug_logger.debug(triple.to_string())
+
+        return triples_of_event
 
 
 
