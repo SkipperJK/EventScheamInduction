@@ -1,4 +1,5 @@
 import json
+import unittest
 from config import *
 from elasticsearch import Elasticsearch
 from ESIServer.model.ArticleES import ArticleES
@@ -36,21 +37,24 @@ def search_articles(keywords = '', size=10000):
     return articles
 
 
-if __name__ == '__main__':
-    articles = search_articles("中国", 3)
-    for article in articles:
-        print(article.__dict__)
 
-'''ES return item
-{
-    '_index': 'sina_article_20191121', 
-    '_type': '_doc', 
-    '_id': '5f57634b83577eadc453f7c9', 
-    '_score': 10.074459, 
-    '_source': {
-        'time': '2019-10-01 13:50:19', 
-        'title': '中国色彩，中国味道，中国红，中国创意。', 
-        'content': '中国色彩，中国味道，中国红，中国创意。
+class TESTES(unittest.TestCase):
+
+    def test_search(self):
+        articles = search_articles("中国", 3)
+        for article in articles:
+            print(article.__dict__)
+
+    '''ES return item
+    {
+        '_index': 'sina_article_20191121', 
+        '_type': '_doc', 
+        '_id': '5f57634b83577eadc453f7c9', 
+        '_score': 10.074459, 
+        '_source': {
+            'time': '2019-10-01 13:50:19', 
+            'title': '中国色彩，中国味道，中国红，中国创意。', 
+            'content': '中国色彩，中国味道，中国红，中国创意。
+        }
     }
-}
-'''
+    '''

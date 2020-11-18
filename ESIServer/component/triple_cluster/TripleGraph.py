@@ -80,10 +80,12 @@ class TripleGraph:
                         bigram_count_dict[triple_bigram] = bigram_count_dict.get(triple_bigram, 0) + 1
                     else:
                         continue
+
+        debug_logger.debug("Co-occurrence table:")
         for triple_bigram, count in bigram_count_dict.items():
             triple_bigram.count = count
             co_occurrence_table.append(triple_bigram)
-
+            debug_logger.debug(triple_bigram.to_string())
         return co_occurrence_table
 
 
@@ -213,8 +215,8 @@ class TripleGraph:
             triples_of_event.append(self.unique_triples[idx])
 
         debug_logger.debug("seed vertex: {}".format(seed_vertex))
-        for triple in triples_of_event:
-            debug_logger.debug(triple.to_string())
+        for idx in idx_sorted:
+            debug_logger.debug("weight: {}, triple: {}".format(scores[idx], self.unique_triples[idx].to_string()))
 
         return triples_of_event
 
@@ -251,9 +253,6 @@ class TestTripleGraph(TestCase):
         debug_logger.debug('Test id2triple: {:s}'.format(str(triple_graph.id2triple[10])))
         debug_logger.debug('Test triple2id: {:d}'.format(triple_graph.triple2id[triple_graph.unique_triples[2]]))
 
-        debug_logger.debug("Co-occurrence table:")
-        for triple_bigram in triple_graph.co_occurrence_table:
-            debug_logger.debug(triple_bigram.to_string())
 
 
 
