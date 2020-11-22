@@ -20,11 +20,18 @@ BULK_SIZE = 2000
 ES_HOSTS = ["10.176.24.53:9200"]  #  "10.176.24.56:9200", "10.176.24.57:9200"
 ES_HOST = "10.176.24.53"
 ES_PORT = 9200
-ES_INDEX = "sina_article_20191121"
+# ES_INDEX = "sina_article_20191121"
+ES_INDEX = "sina_article_20191121_all_fields"  # ES索引名必须是小写
 ES_FIELD_MAPPING = {
+    "_id": "id",
+    "url": "url",
     "time": "time",
     "title": "title",
-    "content": "content"
+    "content": "content",
+    "media_show": "media_show",
+    "mediaL": "media_level",
+    "qscore": "qscore",
+    "thumb": "thumb"
 }
 
 
