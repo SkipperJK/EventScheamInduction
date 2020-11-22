@@ -24,6 +24,7 @@ cnt_all = 0
 actions = []
 all_time = 0
 for doc in collection.find().batch_size(BULK_SIZE):
+    doc['_id'] = str(doc['_id'])
     action = {}
     action = {
         "_op_type": "create",

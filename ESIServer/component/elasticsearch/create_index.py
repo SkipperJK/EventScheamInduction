@@ -14,6 +14,12 @@ mappings = {
   },
   "mappings": {
     "properties": {
+      "id": {
+        "type": "text"
+      },
+      "url": {
+        "type": "text"
+      },
       "time":{
         "type": "date",
         "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
@@ -27,6 +33,18 @@ mappings = {
         "type":"text",
         "analyzer": "index_ansj",
         "search_analyzer": "query_ansj"
+      },
+      "media_show":{
+        "type": "text"
+      },
+      "media_level":{
+        "type": "integer"
+      },
+      "qscore":{
+        "type": "integer"
+      },
+      "thumb":{
+        "type": "text"
       }
     }
   }
