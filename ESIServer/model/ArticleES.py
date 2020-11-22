@@ -3,10 +3,18 @@ from collections import namedtuple
 
 class ArticleES:
 
-    def __init__(self, title, content, time):
+    def __init__(self, id, url, title, content, time, media_show, media_level, qscore, thumb, score):
+        self.id = id
+        self.url = url
         self.title = title
         self.content = content
         self.time = time
+        self.media_show = media_show
+        self.media_level = media_level
+        self.qscore = qscore
+        self.thumb = thumb
+        self.score = score
+
 
     @property
     def sentence_of_title(self):
@@ -15,8 +23,6 @@ class ArticleES:
     @property
     def sentence_of_content(self):
         return split_sentence(self.content)
-
-
 
 
 
