@@ -54,15 +54,15 @@ class Triple:
         self.sent_num = sent_num
         self.num = num
         if isinstance(entity1_list, list):
-            self.entity1_list = entity1_list
+            self.entity1_list = [entity for entity in entity1_list if entity]
         else:
             self.entity1_list = [entity1_list]
         if isinstance(relationship_list, list):
-            self.relationship_list = relationship_list
+            self.relationship_list = [entity for entity in relationship_list if entity]
         else:
             self.relationship_list = [relationship_list]
         if isinstance(entity2_list, list):
-            self.entity2_list = entity2_list
+            self.entity2_list = [entity for entity in entity2_list if entity]
         else:
             self.entity2_list = [entity2_list]
 
