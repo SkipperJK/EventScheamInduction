@@ -57,8 +57,8 @@ class Extractor:
             if extract_dsnf.SBVorFOB_POB_VOB(entity1, entity2):
                 pass
             # [DSNF1]
-            # if not extract_dsnf.E_NN_E(entity1, entity2):
-            #     pass
+            if not extract_dsnf.E_NN_E(entity1, entity2):
+                pass
             # [DSNF3|DSNF5|DSNF6]，并列实体中的主谓宾可能会包含DSNF3
             if extract_dsnf.coordinate(entity1, entity2):
                 pass

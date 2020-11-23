@@ -12,7 +12,7 @@ if 'DEBUG' not in locals().keys():
     DEBUG = True if debug_logger.level == logging.DEBUG else False
 
 
-def extract(origin_sentences, idx_document=0):
+def extract(origin_sentences, idx_document=0, generalization=False):
     """
     对一个document中的多个句子进行关系元组抽取
     :param origin_sentences: list
@@ -38,6 +38,8 @@ def extract(origin_sentences, idx_document=0):
             for t in ts_of_sent:
                 debug_logger.debug(t.to_string())
 
+    if not generalization:
+        return triples
 
     trace_logger.info('Generalizing triples...')
     generalization_triples = []
@@ -46,7 +48,6 @@ def extract(origin_sentences, idx_document=0):
         for triple in triples_of_sent:
             tmp.extend(triple.gts)
         generalization_triples.append(tmp)
-
     return generalization_triples
 
 
@@ -74,7 +75,7 @@ class TestExtract(unittest.TestCase):
             "李明出生于1999年。"
         ]
 
-        triples = extract(origin_sentences)
+        triples = extract(origin_sentences, generalization=True)
         for triples_of_sent in triples:
             for triple in triples_of_sent:
                 root_logger.info(triple.to_string())
