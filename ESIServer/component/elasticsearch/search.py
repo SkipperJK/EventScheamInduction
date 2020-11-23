@@ -3,25 +3,39 @@ import unittest
 import logging
 import jieba
 from config import *
+import jieba.posseg as pseg
+# import pkuseg
 from elasticsearch import Elasticsearch
 from ESIServer.model.ArticleES import ArticleES
 from ESIServer.model.ArticleES import customAritcleESDecoder
 
 es = Elasticsearch(ES_HOSTS)
 debug_logger = logging.getLogger('debug')
+root_logger = logging.getLogger('root')
 
 
 def search_articles(topic ='', size=10000):
     """
     TODO 有三种，title和content
+    TODO; 通过词性标注/命名体识别来决定要不要must match
     :param topic:
     :param size:
     :return:
     """
-
+    allow_pos = [
+        'n', 'nr', 'nz', 'ns', 'v', 't', 's', 'nt', 'nw', 'vn' 
+        'PER', 'LOC', 'ORG', 'TIME'
+    ]
     keywords = []
-    for word in jieba.cut(topic):
-        keywords.append(word)
+    # for word in jieba.cut(topic):
+    #     keywords.append(word)
+    for word, flag in pseg.cut(topic):
+        if flag in allow_pos:
+            keywords.append(word)
+    # seg = pkuseg.pkuseg(model_name='news', postag=True)
+    # for item in seg.cut(topic):
+    #     if item[1] in allow_pos:
+    #         keywords.append(item[0])
 
     action = {
         "size":size,
@@ -47,8 +61,7 @@ def search_articles(topic ='', size=10000):
 
     for word in keywords:
         action["query"]["bool"]["must"].append({'match': {"title": word}})
-    print(action)
-
+    root_logger.info(action)
 
     response = es.search(body=action, index=ES_INDEX) # ES返回的是dict类型，
     articles = []
@@ -82,12 +95,15 @@ def find_point(scores):
     ax3.plot(diffs)
     plt.show()
 
+
 class TESTES(unittest.TestCase):
 
     def test_search(self):
         topic = '中国'
         topic = '吴昕金牛座男友'
         topic = "马航MH370"
+        topic = "艾塞罗比亚"
+        topic = "埃塞俄比亚"
         # topic = '奥斯卡提名'
         articles = search_articles(topic, 200)
         scores = []
