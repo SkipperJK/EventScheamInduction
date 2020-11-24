@@ -78,8 +78,9 @@ class NLP:
         dep = self.ltp.dep(hidden)
         for idx_sent, dep_sent in enumerate(dep):
             for i in range(len(words[idx_sent])):
-                words[idx_sent][i].head = dep_sent[i][1]
-                words[idx_sent][i].dependency = dep_sent[i][2]
+                if i < len(dep_sent):  # [(1, 2, 'ATT'), (2, 3, 'ATT')]] 省略了(3, 0, 'HED)
+                    words[idx_sent][i].head = dep_sent[i][1]
+                    words[idx_sent][i].dependency = dep_sent[i][2]
             sentences.append(SentenceUnit(words[idx_sent]))
         return sentences
 
